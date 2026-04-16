@@ -1,18 +1,6 @@
-const express = require("express");
-const axios = require("axios");
-const cors = require("cors");
+import axios from "axios";
 
-const app = express();
-
-// CORS requirement
-app.use(cors({
-  origin: "*"
-}));
-
-const PORT = process.env.PORT || 3000;
-
-// GET /api/classify?name=john
-app.get("/api/classify", async (req, res) => {
+export default async function handler(req, res) {
   try {
     const { name } = req.query;
 
@@ -47,13 +35,15 @@ app.get("/api/classify", async (req, res) => {
       });
     }
 
-    // Process data
     const sample_size = count;
 
     const is_confident =
       probability >= 0.7 && sample_size >= 100;
 
     const processed_at = new Date().toISOString();
+
+    // CORS (VERY IMPORTANT)
+    res.setHeader("Access-Control-Allow-Origin", "*");
 
     return res.status(200).json({
       status: "success",
@@ -68,15 +58,9 @@ app.get("/api/classify", async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error.message);
-
     return res.status(502).json({
       status: "error",
       message: "Failed to fetch data from upstream service"
     });
   }
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+}
