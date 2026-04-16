@@ -1,6 +1,8 @@
 import axios from "axios";
 
 export default async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+
   try {
     const { name } = req.query;
 
@@ -20,15 +22,14 @@ export default async function handler(req, res) {
       });
     }
 
-    // Call Genderize API
     const response = await axios.get(
       `https://api.genderize.io?name=${name}`
     );
 
     const { gender, probability, count } = response.data;
 
-    // Edge case
-    if (!gender || count === 0) {
+    // FIXED edge case
+    if (gender === null || count === 0) {
       return res.status(422).json({
         status: "error",
         message: "No prediction available for the provided name"
@@ -41,9 +42,6 @@ export default async function handler(req, res) {
       probability >= 0.7 && sample_size >= 100;
 
     const processed_at = new Date().toISOString();
-
-    // CORS (VERY IMPORTANT)
-    res.setHeader("Access-Control-Allow-Origin", "*");
 
     return res.status(200).json({
       status: "success",
