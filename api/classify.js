@@ -4,26 +4,35 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
 
   try {
-    const { name } = req.query;
-
-    // 400 - missing or empty
-    if (!name || name.trim() === "") {
+    const url = req.url;
+    const queryString = url.split('?')[1];
+    if (!queryString) {
       return res.status(400).json({
         status: "error",
         message: "Name parameter is required"
       });
     }
-
-    // 422 - not a string
-    if (typeof name !== "string") {
-      return res.status(422).json({
+    const params = new URLSearchParams(queryString);
+    let name = params.get('name');
+    if (!name) {
+      return res.status(400).json({
         status: "error",
-        message: "Name must be a string"
+        message: "Name parameter is required"
       });
+    }
+    if (typeof name !== 'string' || name.trim() === '') {
+      return res.status(400).json({
+        status: "error",
+        message: "Name parameter is required"
+      });
+    }
+    // Handle nested query
+    if (name.includes('?name=')) {
+      name = name.split('?name=').pop();
     }
 
     const response = await axios.get(
-      `https://api.genderize.io?name=${name}`
+      `https://api.genderize.io?name=${encodeURIComponent(name)}`
     );
 
     const { gender, probability, count } = response.data;
