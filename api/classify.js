@@ -28,14 +28,6 @@ export default async function handler(req, res) {
 
     const { gender, probability, count } = response.data;
 
-    // FIXED edge case
-    if (gender === null || count === 0) {
-      return res.status(422).json({
-        status: "error",
-        message: "No prediction available for the provided name"
-      });
-    }
-
     const sample_size = count;
 
     const is_confident =
